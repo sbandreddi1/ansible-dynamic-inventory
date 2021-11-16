@@ -1,0 +1,6 @@
+- name: Check that our targets are reachable
+  hosts: webprod
+  gather_facts: false
+
+  tasks:
+  - ping:
