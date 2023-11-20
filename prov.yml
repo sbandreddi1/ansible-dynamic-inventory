@@ -1,0 +1,36 @@
+### USAGE: ansible-playbook -i dyninv.py prov.yml -e "desired_capacity=75"
+---
+- name: Search for suitable candidate array and store as localhost var
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    search_model: "UNITY"
+    health_threshold: 89
+    #desired_capacity: 15000
+
+  tasks:
+#  - debug:
+#      var: array_list
+
+  - set_fact:
+      target : "{{ item }}"
+    when:
+      - hostvars[item].type == search_model
+      - hostvars[item].health_score > health_threshold
+      - hostvars[item].freeGB > desired_capacity | int
+    run_once: true
+    loop: "{{ groups.all }}"
+
+  - debug:
+      msg: "We will provision in {{ target }}"
+
+- name: Provision storage in target array
+  hosts: "{{ hostvars['localhost']['target'] }}"
+  gather_facts: false
+
+  tasks:
+  - debug:
+      msg: "volume created in {{ ansible_play_hosts_all.0 }} "
+
+
